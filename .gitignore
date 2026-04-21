@@ -1,2 +1,5 @@
-mmd/
-picture/
+mmd/**
+!mmd/.gitkeep
+
+picture/**
+!picture/.gitkeep
