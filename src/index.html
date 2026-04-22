@@ -34,10 +34,10 @@
       const scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0x000000, 50, 3000);
 
-      const bgTexture = new THREE.TextureLoader(loadingManager).load('../picture/sky.jpg');
+      /*const bgTexture = new THREE.TextureLoader(loadingManager).load('../picture/sky.jpg');
       bgTexture.colorSpace = THREE.SRGBColorSpace;
       scene.background = bgTexture;
-
+        */
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
       camera.position.set(0, 200, 1200);
 
@@ -69,9 +69,9 @@
       });
 
       const loader = new MMDLoader(loadingManager);
-      loader.setResourcePath('../mmd/紅魔館/');
+      const modelUrl = '../mmd/紅魔館/紅魔館.pmx';
       loader.load(
-        '../mmd/紅魔館/紅魔館.pmx',
+        modelUrl,
         (mesh) => {
           scene.add(mesh);
           mmdHelper.add(mesh, {
@@ -80,7 +80,7 @@
         },
         undefined,
         (error) => {
-          console.error('PMX load error:', error);
+          console.error('PMX load error. Check model path:', modelUrl, error);
         }
       );
 
