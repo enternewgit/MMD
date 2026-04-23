@@ -3,3 +3,6 @@ mmd/**
 
 picture/**
 !picture/.gitkeep
+
+next-js/public/mmd/**
+!next-js/public/mmd/.gitkeep
