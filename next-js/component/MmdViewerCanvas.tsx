@@ -6,7 +6,13 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MMDLoader } from "three/examples/jsm/loaders/MMDLoader.js";
 import { MMDAnimationHelper } from "three/examples/jsm/animation/MMDAnimationHelper.js";
 
-export function MmdViewerCanvas() {
+type MmdViewerCanvasProps = {
+  onStartLoading: () => void;
+  onReady: () => void;
+  onError:(error:unknown) => void;
+};
+
+export function MmdViewerCanvas({ onStartLoading, onReady, onError }: MmdViewerCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const initializedRef = useRef(false);
 
@@ -65,15 +71,20 @@ export function MmdViewerCanvas() {
 
     const loader = new MMDLoader(loadingManager);
     const modelUrl = "/mmd/紅魔館/紅魔館.pmx";
+
+    onStartLoading();
+    
     loader.load(
       modelUrl,
       (mesh: THREE.SkinnedMesh) => {
         scene.add(mesh);
         mmdHelper.add(mesh, { physics: false });
+        onReady();
       },
       undefined,
       (error: unknown) => {
         console.error("PMX load error. Check model path:", modelUrl, error);
+        onError(error);
       }
     );
 
