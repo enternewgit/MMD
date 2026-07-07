@@ -1,12 +1,21 @@
 "use client";
 
+import { useState } from "react";
+import type { HandSide } from "./scene/SceneController";
+
 type ViewerState = {
   status: "idle" | "loading" | "ready" | "error";
   message: string;
   detail?: string;
 };
 
-type ModelOption = {
+type StageOption = {
+  id: string;
+  label: string;
+  url: string;
+};
+
+type EnemyOption = {
   id: string;
   label: string;
   url: string;
@@ -18,11 +27,19 @@ type MmdViewerPanelProps = {
   isLoading: boolean;
   isReady: boolean;
   hasError: boolean;
-  models: ModelOption[];
-  selectedModelId: string;
-  onModelChange: (modelId: string) => void;
+  stages: StageOption[];
+  selectedStageId: string;
+  onStageChange: (stageId: string) => void;
+  enemies: EnemyOption[];
+  selectedEnemyId: string;
+  onEnemyChange: (enemyId: string) => void;
   onReset: () => void;
   onRetry: () => void;
+  onFirePattern: (pattern: string) => void;
+  hitCount: number;
+  grazeCount: number;
+  handSide: HandSide;
+  onHandSideChange: (side: HandSide) => void;
 };
 
 const statusColorMap: Record<ViewerState["status"], string> = {
@@ -38,14 +55,23 @@ export function MmdViewerPanel({
   isLoading,
   isReady,
   hasError,
-  models,
-  selectedModelId,
-  onModelChange,
+  stages,
+  selectedStageId,
+  onStageChange,
+  enemies,
+  selectedEnemyId,
+  onEnemyChange,
   onReset,
   onRetry,
+  onFirePattern,
+  hitCount,
+  grazeCount,
+  handSide,
+  onHandSideChange,
 }: MmdViewerPanelProps) {
   const statusColor = statusColorMap[state.status];
   const primaryActionLabel = isLoading ? "読み込み中..." : "再読み込み";
+  const [patternText, setPatternText] = useState("ring(12)");
 
   return (
     <section
@@ -78,38 +104,125 @@ export function MmdViewerPanel({
             {state.message}
           </p>
         </div>
-      </div>
-
-      <label
-        style={{
-          display: "grid",
-          gap: "8px",
-          color: "#111827",
-          fontWeight: 600,
-        }}
-      >
-        モデル切り替え
-        <select
-          value={selectedModelId}
-          onChange={(event) => onModelChange(event.target.value)}
-          disabled={isLoading}
+        <span
           style={{
-            width: "100%",
-            maxWidth: "360px",
-            border: "1px solid #cbd5e1",
-            borderRadius: "10px",
-            padding: "10px 12px",
-            background: isLoading ? "#f8fafc" : "#ffffff",
-            color: "#111827",
+            marginLeft: "auto",
+            fontWeight: 700,
+            color: hitCount > 0 ? "#b91c1c" : "#111827",
+            fontVariantNumeric: "tabular-nums",
           }}
         >
-          {models.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          被弾: {hitCount}
+        </span>
+        <span
+          style={{
+            fontWeight: 700,
+            color: "#2563eb",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          かすり: {grazeCount}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        <label
+          style={{
+            display: "grid",
+            gap: "8px",
+            color: "#111827",
+            fontWeight: 600,
+            flex: "1 1 200px",
+          }}
+        >
+          ステージ
+          <select
+            value={selectedStageId}
+            onChange={(event) => onStageChange(event.target.value)}
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              maxWidth: "360px",
+              border: "1px solid #cbd5e1",
+              borderRadius: "10px",
+              padding: "10px 12px",
+              background: isLoading ? "#f8fafc" : "#ffffff",
+              color: "#111827",
+            }}
+          >
+            {stages.map((stage) => (
+              <option key={stage.id} value={stage.id}>
+                {stage.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label
+          style={{
+            display: "grid",
+            gap: "8px",
+            color: "#111827",
+            fontWeight: 600,
+            flex: "1 1 200px",
+          }}
+        >
+          敵
+          <select
+            value={selectedEnemyId}
+            onChange={(event) => onEnemyChange(event.target.value)}
+            disabled={isLoading}
+            style={{
+              width: "100%",
+              maxWidth: "360px",
+              border: "1px solid #cbd5e1",
+              borderRadius: "10px",
+              padding: "10px 12px",
+              background: isLoading ? "#f8fafc" : "#ffffff",
+              color: "#111827",
+            }}
+          >
+            {enemies.map((enemy) => (
+              <option key={enemy.id} value={enemy.id}>
+                {enemy.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div
+          style={{
+            display: "grid",
+            gap: "8px",
+            color: "#111827",
+            fontWeight: 600,
+            flex: "1 1 200px",
+          }}
+        >
+          発射位置
+          <div style={{ display: "flex", gap: "8px" }}>
+            {(["right", "left"] as HandSide[]).map((side) => (
+              <button
+                key={side}
+                type="button"
+                onClick={() => onHandSideChange(side)}
+                style={{
+                  flex: "1 1 0",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "10px",
+                  padding: "10px 12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  background: handSide === side ? "#0f172a" : "#ffffff",
+                  color: handSide === side ? "#ffffff" : "#111827",
+                }}
+              >
+                {side === "right" ? "右手" : "左手"}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {(hasError || state.detail) && (
         <details
@@ -129,6 +242,47 @@ export function MmdViewerPanel({
           </p>
         </details>
       )}
+
+      <div style={{ display: "grid", gap: "8px" }}>
+        <label style={{ fontWeight: 600, color: "#111827" }}>弾幕コマンド</label>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <textarea
+            value={patternText}
+            onChange={(event) => setPatternText(event.target.value)}
+            placeholder="ring(12); fan(9, 30)&#10;&#10;ring3d(12, 20)"
+            style={{
+              flex: "1 1 260px",
+              minWidth: "200px",
+              minHeight: "80px",
+              border: "1px solid #cbd5e1",
+              borderRadius: "10px",
+              padding: "10px 12px",
+              fontFamily: "monospace",
+              fontSize: "13px",
+              resize: "vertical",
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => onFirePattern(patternText)}
+            disabled={isLoading}
+            style={{
+              border: "none",
+              borderRadius: "999px",
+              padding: "8px 16px",
+              fontWeight: 600,
+              color: "#ffffff",
+              background: isLoading ? "#94a3b8" : "#0f172a",
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
+          >
+            発射
+          </button>
+        </div>
+        <p style={{ margin: 0, color: "#64748b", fontSize: "12px" }}>
+          例: single(); ring(12, 600); ring3d(12, 20); fan(9, 30)
+        </p>
+      </div>
 
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <button

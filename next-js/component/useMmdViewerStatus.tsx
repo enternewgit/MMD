@@ -5,31 +5,32 @@ type ViewerStatus = "idle" | "loading" | "ready" | "error";
 
 type ViewerState = {
     status: ViewerStatus;
-    message:string;
+    message: string;
     detail?: string;
 };
 
 const initialViewerState: ViewerState = {
     status: "idle",
-    message:"未読み込み",
+    message: "未読み込み",
 };
 
-function formatUnknownError(error: unknown): string{
+function formatUnknownError(error: unknown): string {
     if (error instanceof Error) return error.message;
     if (typeof error === "string") return error;
-    try{
+    try {
         return JSON.stringify(error);
-    }catch{
+    } catch {
         return String(error);
     }
 }
-export function useMmdViewerStatus(){
+
+export function useMmdViewerStatus() {
     const [state, setState] = useState<ViewerState>(initialViewerState);
 
     const startLoading = () => {
         setState({
             status: "loading",
-            message:"読み込み中",
+            message: "読み込み中",
             detail: undefined,
         });
     };
@@ -46,22 +47,22 @@ export function useMmdViewerStatus(){
         setState(initialViewerState);
     };
 
-    const setError = (error:unknown)=>{
+    const setError = (error: unknown) => {
         const detail = formatUnknownError(error);
         console.error("MMD load error:", error);
         setState({
-            status:"error",
-            message:"読み込みに失敗しました",
+            status: "error",
+            message: "読み込みに失敗しました",
             detail,
-        })
-    }
+        });
+    };
 
     const isLoading = state.status === "loading";
     const isReady = state.status === "ready";
     const hasError = state.status === "error";
 
     const statusLabel = useMemo(() => {
-        switch (state.status){
+        switch (state.status) {
             case "idle":
                 return "未読み込み";
             case "loading":
@@ -73,7 +74,7 @@ export function useMmdViewerStatus(){
             default:
                 return "不明";
         }
-    },[state.status]);
+    }, [state.status]);
 
     return {
         state,
@@ -85,5 +86,5 @@ export function useMmdViewerStatus(){
         isReady,
         hasError,
         statusLabel,
-    }
+    };
 }
